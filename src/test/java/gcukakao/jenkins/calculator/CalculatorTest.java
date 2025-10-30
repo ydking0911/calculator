@@ -1,7 +1,7 @@
 package gcukakao.jenkins.calculator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unused")
@@ -26,5 +26,16 @@ public class CalculatorTest {
     @Test
     public void testDiv() {
         assertEquals(6, calculator.div(12,2));
+    }
+
+    @Test
+    public void testDivByZero() {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> calculator.div(10, 0));
+        assertEquals("0으로 나눌 수 없습니다.", exception.getMessage());
+    }
+
+    @Test
+    public void testGetMyName() {
+        assertEquals("박영두", calculator.getMyName());
     }
 }
