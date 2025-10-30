@@ -14,6 +14,11 @@ java {
 	}
 }
 
+// Gradle toolchain auto-provisioning 활성화
+tasks.withType(JavaCompile).configureEach {
+	options.compilerArgs.addAll(['--release', '17'])
+}
+
 repositories {
 	mavenCentral()
 }

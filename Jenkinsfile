@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    environment {
+        GRADLE_OPTS = "-Dorg.gradle.java.home="
+    }
+    
     stages {
         stage("Checkout") {
             steps {
@@ -8,15 +12,37 @@ pipeline {
             }
         }
         
+        stage("Setup Java") {
+            steps {
+                sh '''
+                    # Java 설치 확인
+                    if command -v java &> /dev/null; then
+                        java -version
+                        export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                        echo "JAVA_HOME=$JAVA_HOME"
+                    else
+                        echo "Java가 설치되어 있지 않습니다. Gradle이 자동으로 다운로드합니다."
+                    fi
+                '''
+            }
+        }
+        
         stage("Build") {
             steps {
-                sh "./gradlew clean build -x test"
+                sh '''
+                    chmod +x ./gradlew
+                    export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                    ./gradlew clean build -x test --no-daemon
+                '''
             }
         }
         
         stage("Unit Test") {
             steps {
-                sh "./gradlew test"
+                sh '''
+                    export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                    ./gradlew test --no-daemon
+                '''
             }
             post {
                 always {
