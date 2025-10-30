@@ -1,10 +1,7 @@
 pipeline {
     agent any
     
-    environment {
-        GRADLE_OPTS = "-Dorg.gradle.java.home="
-    }
-    
+
     stages {
         stage("Checkout") {
             steps {
@@ -18,10 +15,11 @@ pipeline {
                     # Java 설치 확인
                     if command -v java &> /dev/null; then
                         java -version
-                        export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                        JAVA_BIN=$(readlink -f "$(which java)")
+                        export JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
                         echo "JAVA_HOME=$JAVA_HOME"
                     else
-                        echo "Java가 설치되어 있지 않습니다. Gradle이 자동으로 다운로드합니다."
+                        echo "Java가 설치되어 있지 않습니다. Gradle Toolchain이 자동으로 다운로드합니다."
                     fi
                 '''
             }
@@ -31,7 +29,11 @@ pipeline {
             steps {
                 sh '''
                     chmod +x ./gradlew
-                    export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                    if command -v java &> /dev/null; then
+                        JAVA_BIN=$(readlink -f "$(which java)")
+                        export JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
+                        echo "JAVA_HOME=$JAVA_HOME"
+                    fi
                     ./gradlew clean build -x test --no-daemon
                 '''
             }
@@ -40,7 +42,11 @@ pipeline {
         stage("Unit Test") {
             steps {
                 sh '''
-                    export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")
+                    if command -v java &> /dev/null; then
+                        JAVA_BIN=$(readlink -f "$(which java)")
+                        export JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
+                        echo "JAVA_HOME=$JAVA_HOME"
+                    fi
                     ./gradlew test --no-daemon
                 '''
             }
